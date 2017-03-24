@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="">
+
+    <title>Sensors' diagram</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <!-- Custom styles for this template -->
+    <link href="../static/sticky-footer.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <!-- Begin page content -->
+    <div class="container">
+      <div class="page-header">
+        <h1>Sensor monitor</h1>
+      </div>
+      <p class="lead">温湿度图表展示</p>
+        <span class="label label-success" id="temperature-warning"></span>
+        <div id="temperature" style="width: 600px;height:400px;"></div>
+        <span class="label label-success" id="humidity-warning"></span>
+        <div id="humidity" style="width: 600px;height:400px;"></div>
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <p class="text-muted">Powed by bootstrap & Coding for xtl</p>
+      </div>
+    </footer>
+
+    <script src="//cdn.bootcss.com/echarts/3.4.0/echarts.min.js"></script>
+    <!--<script src="//cdn.bootcss.com/echarts/3.4.0/echarts.js"></script>-->
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        var temperatureChart = echarts.init(document.getElementById('temperature'));
+        // 显示标题，图例和空的坐标轴
+        var temperatureOption = {
+            title: {
+                text: '温度'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            calculable : true,
+            xAxis: {
+//                type: 'time',
+                splitLine: {
+                    show: false
+                },
+                data: []
+            },
+            yAxis: {
+                type: 'value',
+                boundaryGap: false,
+                splitLine: {
+                    show: false
+                },
+                axisLabel : {
+                    formatter: '{value} °C'
+                },
+                splitArea : {show : true}
+            },
+            series: [{
+                name: 'Temperature',
+                type: 'line',
+                showSymbol: false,
+                itemStyle: {
+                    normal: {
+                        lineStyle: {
+                            shadowColor : 'rgba(0,0,0,0.4)'
+                        }
+                    }
+                },
+                data: []
+            }]
+        };
+
+        temperatureChart.setOption(temperatureOption);
+        //时间戳转换为可读时间数据
+        function timestamp2string (data) {
+            time = new Date(data * 1000);
+            var time_string = [time.getHours(), time.getMinutes(), time.getSeconds()].join(':');
+            return time_string;
+        };
+
+        var timeTempData = [];
+        var valuesTemp = [];
+        $.getJSON('/alltemp', function (data) {
+            timeTempData = [for (t of data[0]) timestamp2string(t)];
+            valuesTemp = data[1];
+            temperatureChart.setOption({
+                xAxis: {
+                    data: timeTempData
+                },
+                series: [{
+                    data: valuesTemp
+                }]
+            });
+        });
+        function updateTemperature() {
+            $.getJSON('/newtemp', function (data) {
+                var newTime = timestamp2string(data[0]);
+                if (newTime != timeTempData[timeTempData.length - 1]) {
+                    console.log('updating temperature');
+                    var newValue = data[1];
+                    $("#temperature-warning").attr('class', 'label label-success').text('Updating');
+                    timeTempData.shift();
+                    timeTempData.push(newTime);
+                    valuesTemp.shift();
+                    valuesTemp.push(newValue);
+                    temperatureChart.setOption({
+                        xAxis: {
+                            data: timeTempData
+                        },
+                        series: [{
+                            data: valuesTemp
+                        }]
+                    });
+                } else {
+                    $("#temperature-warning").attr('class', 'label label-warning').text('Get None');
+                    console.log('have no new temperature data');
+
+                };
+            });
+        };
+        setInterval(updateTemperature, 3000);
+    </script>
+
+
+    <script>
+        var humidityChart = echarts.init(document.getElementById('humidity'));
+        // 显示标题，图例和空的坐标轴
+        var humidityOption = {
+            title: {
+                text: '湿度'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            calculable : true,
+            xAxis: {
+//                type: 'time',
+                splitLine: {
+                    show: false
+                },
+                data: []
+            },
+            yAxis: {
+                type: 'value',
+                boundaryGap: false,
+                splitLine: {
+                    show: false
+                },
+                axisLabel : {
+                    formatter: '{value} °'
+                },
+                splitArea : {show : true}
+            },
+            series: [{
+                name: 'Humidity',
+                type: 'line',
+                showSymbol: false,
+                itemStyle: {
+                    normal: {
+                        lineStyle: {
+                            shadowColor : 'rgba(0,0,0,0.4)'
+                        }
+                    }
+                },
+                data: []
+            }]
+        };
+
+        humidityChart.setOption(humidityOption);
+        //时间戳转换为可读时间数据
+        function timestamp2string (data) {
+            time = new Date(data * 1000);
+            var time_string = [time.getHours(), time.getMinutes(), time.getSeconds()].join(':');
+            return time_string;
+        };
+        var timeData = [];
+        var values = [];
+        $.getJSON('/allhum', function (data) {
+            timeData = [for (t of data[0]) timestamp2string(t)];
+            values = data[1];
+            humidityChart.setOption({
+                xAxis: {
+                    data: timeData
+                },
+                series: [{
+                    data: values
+                }]
+            });
+        });
+        function updateHumidity() {
+            $.getJSON('/newhum', function (data) {
+                var newTime = timestamp2string(data[0]);
+                if (newTime != timeData[timeData.length - 1]) {
+                    var newValue = data[1];
+                    $("#humidity-warning").attr('class', 'label label-success').text('Updating');
+                    timeData.shift();
+                    timeData.push(newTime);
+                    values.shift();
+                    values.push(newValue);
+                    humidityChart.setOption({
+                        xAxis: {
+                            data: timeData
+                        },
+                        series: [{
+                            data: values
+                        }]
+                    });
+                } else {
+                    $("#humidity-warning").attr('class', 'label label-warning').text('Get None');
+                };
+            });
+        };
+        setInterval(updateHumidity, 3000);
+    </script>
+
+</body>
+</html>
