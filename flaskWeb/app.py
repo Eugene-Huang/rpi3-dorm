@@ -30,8 +30,8 @@ def get_all_tempperature():
         cur = conn.cursor()
     except MySQLdb.Error as error:
         return error
-    sql = 'SELECT * FROM (SELECT time, value FROM temperature \
-            ORDER BY time DESC LIMIT 10) inverted ORDER BY time'
+    sql = 'SELECT * FROM (SELECT time, value FROM temperature ' + \
+        'ORDER BY time DESC LIMIT 10) inverted ORDER BY time'
     cur.execute(sql)
     raws = list(cur.fetchall())
     if raws is None:
@@ -53,15 +53,14 @@ def get_new_temperature():
         cur = conn.cursor()
     except MySQLdb.Error as error:
         return error
-    sql = 'SELECT time, value FROM temperature ORDER BY\
-            time DESC LIMIT 1'
+    sql = 'SELECT time, value FROM temperature ORDER BY ' + \
+        'time DESC LIMIT 1'
     cur.execute(sql)
     raw = cur.fetchone()
     if raw is None:
         return json.dumps([0, 0])
     data = [time.mktime(raw[0].timetuple()), raw[1]]
     return json.dumps(data)
-
 
 
 @app.route('/allhum', methods=['GET'])
@@ -74,8 +73,8 @@ def get_all_humidity():
         cur = conn.cursor()
     except MySQLdb.Error as error:
         return error
-    sql = 'SELECT * FROM (SELECT time, value FROM humidity \
-            ORDER BY time DESC LIMIT 10) inverted ORDER BY time'
+    sql = 'SELECT * FROM (SELECT time, value FROM humidity ' + \
+        'ORDER BY time DESC LIMIT 10) inverted ORDER BY time'
     cur.execute(sql)
     raws = list(cur.fetchall())
     if raws is None:
@@ -97,8 +96,8 @@ def get_new_humidity():
         cur = conn.cursor()
     except MySQLdb.Error as error:
         return error
-    sql = 'SELECT time, value FROM humidity ORDER BY \
-            time DESC LIMIT 1'
+    sql = 'SELECT time, value FROM humidity ORDER BY ' + \
+        'time DESC LIMIT 1'
     cur.execute(sql)
     raw = cur.fetchone()
     if raw is None:

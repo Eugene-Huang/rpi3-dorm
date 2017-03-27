@@ -9,6 +9,7 @@ import MySQLdb
 import ConfigParser
 import os
 
+
 def db_info():
     cfgpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini')
     config = cf()
@@ -21,13 +22,37 @@ def db_info():
         password = config.get('database', 'password')
     except ConfigParser.Error as e:
         print '[CONFIG ERROR]parsing cfg file: ', e
-    except ConfigParser.NoSectionError as er:
-        print '[CONFIG ERROR]acquire cfg section: ', er
-    except ConfigParser.NoOptionError as err:
-        print '[CONFIG ERROR]acquire sfg option: ', err
     else:
         return [host, port, database, username,
                 password]
+
+
+def email_info():
+    cfgpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini')
+    config = cf()
+    try:
+        config.read(cfgpath)
+        login_adr = config.get('email', 'login_adr')
+        admin_addr = config.getint('email', 'admin_addr')
+        authcode = config.get('email', 'authcode')
+    except ConfigParser.Error as e:
+        print '[CONFIG ERROR]parsing cfg file: ', e
+    else:
+        return [login_adr, admin_addr, authcode]
+
+
+def heweather_info():
+    cfgpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini')
+    config = cf()
+    try:
+        config.read(cfgpath)
+        key = config.get('heweather', 'key')
+        api_url = config.get('heweather', 'api_url')
+        cityID = config.get('heweather', 'cityID')
+    except ConfigParser.Error as e:
+        print '[CONFIG ERROR]parsing cfg file: ', e
+    else:
+        return [api_url, cityID, key]
 
 
 def init_db():
