@@ -88,7 +88,7 @@ def displayLCD(lcd1602, temperature, humidity, pm25=None):
     lcd = lcd1602
     lcd.clear()
     first_info = time.strftime('%H:%M', time.localtime()) + ' PM25 ' + pm25
-    second_data = '{0:0.1f}C   {1:0.1f}%'.format(humidity, temperature)
+    second_data = '{0:0.1f} C   {1:0.1f}%'.format(humidity, temperature)
     msg = first_info + '\n' + second_data
     lcd.message(msg)
     print msg
@@ -127,5 +127,5 @@ while True:
     time.sleep(3)
 
 
-# if __name__ == '__main__':
-#     pass
+if __name__ == '__main__':
+    obtainPM25(api_url, cityID, key)
