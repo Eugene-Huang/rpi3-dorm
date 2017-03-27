@@ -4,6 +4,8 @@ from email.header import Header
 from email.mime.text import MIMEText
 from email.utils import formataddr
 import smtplib
+import sys
+import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '..'))
 from config import email_info
 

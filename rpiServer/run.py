@@ -4,6 +4,8 @@ import Adafruit_CharLCD as LCD
 import MySQLdb
 import requests
 import time
+import sys
+import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '..'))
 from config import db_info, email_info, heweather_info
 
@@ -125,5 +127,5 @@ while True:
     time.sleep(3)
 
 
-if __name__ == '__main__':
-    pass
+# if __name__ == '__main__':
+#     pass
