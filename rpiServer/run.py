@@ -1,19 +1,23 @@
 # -*- coding: utf8 -*-
+
 import Adafruit_DHT
 import Adafruit_CharLCD as LCD
 import MySQLdb
 import requests
 import time
+from celerytool import email_notification
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '..'))
-from config import db_info, email_info, heweather_info
+from config import db_info, heweather_info, threshold_info
 
 
 # 和天气API
 api_url, cityID, key = heweather_info()
 # 数据库
 HOST, PORT, DATABASE, USERNAME, PASSWD = db_info()
+# 设定的数据阈值
+temp_threshold, hum_thresold, pm25_thresold = threshold_info()
 # DHT11 sensor
 # data header: GPIO26 == PIN37
 DHT11_GPIO = 26
@@ -60,8 +64,10 @@ def isconnect(connect):
 
 
 def store2db(cursor, temperature, humidity):
-    insert_temp = 'INSERT INTO temperature(value) VALUES({value})'.format(value=temperature)
-    insert_hum = 'INSERT INTO humidity(value) VALUES({value})'.format(value=humidity)
+    insert_temp = 'INSERT INTO temperature(value) VALUES({value})'.format(
+        value=temperature)
+    insert_hum = 'INSERT INTO humidity(value) VALUES({value})'.format(
+        value=humidity)
     cur = cursor
     if cursor is not None:
         try:
@@ -84,24 +90,30 @@ def obtain_dht11(dht11, dht11_gpio):
 def displayLCD(lcd1602, temperature, humidity, pm25=None):
     temperature = temperature
     humidity = humidity
-    pm25 = '0' if pm25 is None else str(pm25)
+    pm25 = '00' if pm25 is None else str(pm25)
     lcd = lcd1602
     lcd.clear()
-    first_info = time.strftime('%H:%M', time.localtime()) + ' PM25 ' + pm25
-    second_data = '{0:0.1f} C   {1:0.1f}%'.format(humidity, temperature)
+    first_info = time.strftime('%H:%M', time.localtime()) + '  PM25 ' + pm25
+    second_data = '{0:0.1f} C   {1:0.1f}%'.format(temperature, humidity)
     msg = first_info + '\n' + second_data
     lcd.message(msg)
     print msg
 
 
-def obtainPM25(api_url, city, key):
-    api_url = api_url
-    city = city
-    key = key
-    params = {'city': city, 'key': key}
-    res = requests.get(api_url, params=params)
-    pm25 = res.json()['HeWeather5'][0]['aqi']['city']['pm25'].encode('utf8')
-    return int(pm25)
+# def obtainPM25(api_url, city, key):
+#     api_url = api_url
+#     city = city
+#     key = key
+#     params = {'city': city, 'key': key}
+#     res = requests.get(api_url, params=params)
+#     pm25 = res.json()['HeWeather5'][0]['aqi']['city']['pm25'].encode('utf8')
+#     return int(pm25)
+
+def obtainPM25():
+    with open('../pm25.txt', 'r') as f:
+        pm25 = f.read()
+        f.close()
+    return pm25
 
 
 # Initialize the DHT11
@@ -111,21 +123,25 @@ lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4,
                            lcd_d5, lcd_d6, lcd_d7,
                            lcd_columns, lcd_rows, lcd_backlight)
 
+
+def read_dht11():
+    return obtain_dht11(dht11, DHT11_GPIO)
+
+
 # 建立数据库连接
 conn = db_connect(HOST, PORT, USERNAME, PASSWD, DATABASE)
 cur = conn.cursor()
 conn.autocommit(True)
 
 while True:
-    humidity, temperature = obtain_dht11(dht11, DHT11_GPIO)
-    displayLCD(lcd, temperature, humidity)
+    temperature, humidity = obtain_dht11(dht11, DHT11_GPIO)
+    pm25 = obtainPM25()
+    if temperature > temp_threshold or humidity > hum_thresold:
+        email_notification(temperature, humidity)
+    displayLCD(lcd, temperature, humidity, pm25)
     if not isconnect(conn):
         conn = db_connect(HOST, PORT, USERNAME, PASSWD, DATABASE)
         cur = conn.cursor()
         conn.autocommit(True)
     store2db(cur, temperature, humidity)
-    time.sleep(3)
-
-
-if __name__ == '__main__':
-    obtainPM25(api_url, cityID, key)
+    time.sleep(5)

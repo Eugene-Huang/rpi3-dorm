@@ -4,13 +4,14 @@ from email.header import Header
 from email.mime.text import MIMEText
 from email.utils import formataddr
 import smtplib
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '..'))
-from config import email_info
+# import sys
+# import os
+# sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '..'))
+# from config import email_info
 
 
 class QQEmail(object):
+
     def __init__(self, user, passwd):
         self.from_addr = user
         self.pwd = passwd
@@ -37,8 +38,10 @@ class QQEmail(object):
 
 
 if __name__ == '__main__':
-    frm, to, authcode = email_info()
-    sender = QQEmail(frm, authcode)
-    subject = 'test'
-    content = 'hello rpi sensor'
-    sender.send(to, subject, content)
+    # print email_info()
+    # frm, to, authcode = email_info()
+    # sender = QQEmail(frm, authcode)
+    # subject = '温湿度邮件通知'
+    # content = 'Hello， admin\nTemperature: 35 C\nHumidity: 90%'
+    # sender.send(to, subject, content)
+    pass

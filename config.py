@@ -11,7 +11,8 @@ import os
 
 
 def db_info():
-    cfgpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini')
+    cfgpath = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'conf.ini')
     config = cf()
     try:
         config.read(cfgpath)
@@ -28,12 +29,13 @@ def db_info():
 
 
 def email_info():
-    cfgpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini')
+    cfgpath = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'conf.ini')
     config = cf()
     try:
         config.read(cfgpath)
-        login_adr = config.get('email', 'login_adr')
-        admin_addr = config.getint('email', 'admin_addr')
+        login_adr = config.get('email', 'login_addr')
+        admin_addr = config.get('email', 'admin_addr')
         authcode = config.get('email', 'authcode')
     except ConfigParser.Error as e:
         print '[CONFIG ERROR]parsing cfg file: ', e
@@ -42,7 +44,8 @@ def email_info():
 
 
 def heweather_info():
-    cfgpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini')
+    cfgpath = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'conf.ini')
     config = cf()
     try:
         config.read(cfgpath)
@@ -53,6 +56,21 @@ def heweather_info():
         print '[CONFIG ERROR]parsing cfg file: ', e
     else:
         return [api_url, cityID, key]
+
+
+def threshold_info():
+    cfgpath = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'conf.ini')
+    config = cf()
+    try:
+        config.read(cfgpath)
+        temperature = config.getint('thresold', 'temperature')
+        humitity = config.getint('thresold', 'humitity')
+        pm25 = config.getint('thresold', 'pm25')
+    except ConfigParser.Error as e:
+        print '[CONFIG ERROR]parsing cfg file: ', e
+    else:
+        return [temperature, humitity, pm25]
 
 
 def init_db():
